@@ -8,7 +8,7 @@ export async function createCategoryService(categoryDto: createCategoryDTO) {
     return category;
 }
 
-export async function getCategoryByIdService(id: number) {
+export async function getCategoryByIdService(id: string) {
     const category = await categoryRepository.findById(id);
     return category;
 }
@@ -18,12 +18,12 @@ export async function getAllCategoriesService() {
     return categories;
 }
 
-export async function deleteCategoryService(id: number) {
+export async function deleteCategoryService(id: string) {
     const category = await categoryRepository.delete(id);
     return category;
 }
 
-export async function updateCategoryService(id: number, categoryDto: createCategoryDTO) {
+export async function updateCategoryService(id: string, categoryDto: createCategoryDTO) {
     const category = await categoryRepository.update(id, categoryDto);
     return category;
 }

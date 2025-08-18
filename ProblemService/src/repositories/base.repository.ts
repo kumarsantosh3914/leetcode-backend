@@ -19,7 +19,7 @@ abstract class BaseRepository<T extends Document> {
    * @param id Document ID
    * @returns Promise of found document or null
    */
-  async findById(id: number | Types.ObjectId): Promise<T | null> {
+  async findById(id: string | Types.ObjectId): Promise<T | null> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestError("Invalid ID format");
     }
@@ -49,7 +49,7 @@ abstract class BaseRepository<T extends Document> {
    * @returns Promise of updated document
    */
   async update(
-    id: number | Types.ObjectId,
+    id: string | Types.ObjectId,
     updateData: UpdateQuery<T>
   ): Promise<T | null> {
     if (!Types.ObjectId.isValid(id)) {
@@ -73,7 +73,7 @@ abstract class BaseRepository<T extends Document> {
    * @param id Document ID
    * @returns Promise of deleted document
    */
-  async delete(id: number | Types.ObjectId): Promise<T | null> {
+  async delete(id: string | Types.ObjectId): Promise<T | null> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestError("Invalid ID format");
     }
