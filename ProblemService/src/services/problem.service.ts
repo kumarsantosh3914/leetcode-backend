@@ -8,7 +8,7 @@ export async function createProblemService(problemDto: createProblemDTO) {
     return problem;
 }
 
-export async function getProblemByIdService(id: number) {
+export async function getProblemByIdService(id: string) {
     const problem = await problemRepository.findById(id);
     return problem;
 }
@@ -18,12 +18,12 @@ export async function getAllProblemsService() {
     return problems;
 }
 
-export async function deleteProblemService(id: number) {
+export async function deleteProblemService(id: string) {
     const problem = await problemRepository.delete(id);
     return problem;
 }
 
-export async function updateProblemService(id: number, problemDto: createProblemDTO) {
+export async function updateProblemService(id: string, problemDto: createProblemDTO) {
     const problem = await problemRepository.update(id, problemDto);
     return problem;
 }
