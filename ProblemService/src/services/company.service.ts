@@ -8,7 +8,7 @@ export async function createCompanyService(companyDto: createCompanyDTO) {
     return company;
 }
 
-export async function categoryByIdService(id: number) {
+export async function companyByIdService(id: string) {
     const company = await companyRepository.findById(id);
     return company;
 }
@@ -18,12 +18,12 @@ export async function getAllCompaniesService() {
     return companies;
 }
 
-export async function deleteCompanyService(id: number) {
+export async function deleteCompanyService(id: string) {
     const company = await companyRepository.delete(id);
     return company;
 }
 
-export async function updateCompanyService(id: number, companyDto: createCompanyDTO) {
+export async function updateCompanyService(id: string, companyDto: createCompanyDTO) {
     const company = await companyRepository.update(id, companyDto);
     return company;
 }
