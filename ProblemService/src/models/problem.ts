@@ -15,6 +15,19 @@ const codeTemplateSchema = new Schema({
     }
 }, { _id: false });
 
+const testCaseSchema = new Schema({
+    input: {
+        type: String,
+        required: [true, "Input is required"],
+        trim: true,
+    },
+    output: {
+        type: String,
+        required: [true, "Output is required"],
+        trim: true,
+    }
+}, { _id: false });
+
 const problemSchema = new Schema({
     problemNumber: {
         type: Number,
@@ -116,7 +129,8 @@ const problemSchema = new Schema({
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    testcases: [testCaseSchema],
 }, {
     timestamps: true,
     versionKey: false,
