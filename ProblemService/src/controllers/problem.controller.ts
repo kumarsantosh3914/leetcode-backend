@@ -28,8 +28,10 @@ import {
     updateStatementService,
     findRandomProblemService,
 } from "../services/problem.service";
+import logger from "../config/logger.config";
 
 export async function createProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("createProblemHandler called", { params: req.params, query: req.query, body: req.body });
     const response = await createProblemService(req.body);
 
     res.status(201).json({
@@ -40,6 +42,7 @@ export async function createProblemHandler(req: Request, res: Response, next: Ne
 }
 
 export async function getProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("getProblemHandler called", { params: req.params, query: req.query });
     const response = await getProblemByIdService(req.params.id);
 
     res.status(200).json({
@@ -50,6 +53,7 @@ export async function getProblemHandler(req: Request, res: Response, next: NextF
 }
 
 export async function getAllProblemsHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("getAllProblemsHandler called", { query: req.query });
     const response = await getAllProblemsService();
 
     res.status(200).json({
@@ -60,6 +64,7 @@ export async function getAllProblemsHandler(req: Request, res: Response, next: N
 }
 
 export async function deleteProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("deleteProblemHandler called", { params: req.params });
     const response = await deleteProblemService(req.params.id);
 
     res.status(200).json({
@@ -70,6 +75,7 @@ export async function deleteProblemHandler(req: Request, res: Response, next: Ne
 }
 
 export async function updateProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("updateProblemHandler called", { params: req.params, body: req.body });
     const response = await updateProblemService(req.params.id, req.body);
 
     res.status(200).json({
@@ -80,6 +86,7 @@ export async function updateProblemHandler(req: Request, res: Response, next: Ne
 }
 
 export async function getProblemsHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("getProblemsHandler called", { query: req.query });
     const q = (req.query.q as string) || undefined;
     const slug = (req.query.slug as string) || undefined;
     const difficultyIn = (req.query.difficultyIn as string | undefined)?.split(",").filter(Boolean) as any;
@@ -96,6 +103,7 @@ export async function getProblemsHandler(req: Request, res: Response, next: Next
 }
 
 export async function getProblemsCountHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("getProblemsCountHandler called", { query: req.query });
     const q = (req.query.q as string) || undefined;
     const slug = (req.query.slug as string) || undefined;
     const difficultyIn = (req.query.difficultyIn as string | undefined)?.split(",").filter(Boolean) as any;
@@ -109,87 +117,106 @@ export async function getProblemsCountHandler(req: Request, res: Response, next:
 }
 
 export async function getProblemBySlugHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("getProblemBySlugHandler called", { params: req.params });
     const response = await getBySlug(req.params.slug);
     res.status(200).json({ message: "Problem fetched by slug", data: response, success: true });
 }
 
 export async function patchProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("patchProblemHandler called", { params: req.params, body: req.body });
     const response = await updateById(req.params.id, req.body);
     res.status(200).json({ message: "Problem updated successfully", data: response, success: true });
 }
 
 export async function softDeleteProblemHandler(req: Request, res: Response, next: NextFunction) {
+    logger.info("softDeleteProblemHandler called", { params: req.params });
     const response = await softDeleteById(req.params.id);
     res.status(200).json({ message: "Problem soft-deleted", data: response, success: true });
 }
 
 export async function getProblemTagsHandler(req: Request, res: Response) {
+    logger.info("getProblemTagsHandler called", { params: req.params });
     const response = await getTags(req.params.id);
     res.status(200).json({ message: "Tags fetched", data: response, success: true });
 }
 export async function addProblemTagsHandler(req: Request, res: Response) {
+    logger.info("addProblemTagsHandler called", { params: req.params, body: req.body });
     const response = await addTags(req.params.id, req.body.tags || []);
     res.status(200).json({ message: "Tags added", data: response, success: true });
 }
 export async function removeProblemTagHandler(req: Request, res: Response) {
+    logger.info("removeProblemTagHandler called", { params: req.params });
     const response = await removeTags(req.params.id, req.params.tag);
     res.status(200).json({ message: "Tag removed", data: response, success: true });
 }
 
 export async function getProblemCompaniesHandler(req: Request, res: Response) {
+    logger.info("getProblemCompaniesHandler called", { params: req.params });
     const response = await getAllCompanies(req.params.id);
     res.status(200).json({ message: "Companies fetched", data: response, success: true });
 }
 export async function addProblemCompaniesHandler(req: Request, res: Response) {
+    logger.info("addProblemCompaniesHandler called", { params: req.params, body: req.body });
     const response = await addCompanies(req.params.id, req.body.companies || []);
     res.status(200).json({ message: "Companies added", data: response, success: true });
 }
 export async function removeProblemCompanyHandler(req: Request, res: Response) {
+    logger.info("removeProblemCompanyHandler called", { params: req.params });
     const response = await removeCompany(req.params.id, req.params.companyId);
     res.status(200).json({ message: "Company removed", data: response, success: true });
 }
 
 export async function getProblemStatementHandler(req: Request, res: Response) {
+    logger.info("getProblemStatementHandler called", { params: req.params });
     const response = await getStatementService(req.params.id);
     res.status(200).json({ message: "Statement fetched", data: response, success: true });
 }
 export async function updateProblemStatementHandler(req: Request, res: Response) {
+    logger.info("updateProblemStatementHandler called", { params: req.params, body: req.body });
     const response = await updateStatementService(req.params.id, req.body || {});
     res.status(200).json({ message: "Statement updated", data: response, success: true });
 }
 export async function getProblemMetaHandler(req: Request, res: Response) {
+    logger.info("getProblemMetaHandler called", { params: req.params });
     const response = await getMeta(req.params.id);
     res.status(200).json({ message: "Meta fetched", data: response, success: true });
 }
 export async function getProblemStatsHandler(req: Request, res: Response) {
+    logger.info("getProblemStatsHandler called", { params: req.params });
     const response = await getStats(req.params.id);
     res.status(200).json({ message: "Stats fetched", data: response, success: true });
 }
 
 export async function getProblemTestcasesHandler(req: Request, res: Response) {
+    logger.info("getProblemTestcasesHandler called", { params: req.params });
     const response = await listTestcases(req.params.id);
     res.status(200).json({ message: "Testcases fetched", data: response, success: true });
 }
 export async function addProblemTestcaseHandler(req: Request, res: Response) {
+    logger.info("addProblemTestcaseHandler called", { params: req.params, body: req.body });
     const response = await addTestcase(req.params.id, req.body);
     res.status(200).json({ message: "Testcase added", data: response, success: true });
 }
 export async function updateProblemTestcaseHandler(req: Request, res: Response) {
+    logger.info("updateProblemTestcaseHandler called", { params: req.params, body: req.body });
     const index = parseInt(req.params.index, 10);
     const response = await updateTestcaseByIndex(req.params.id, index, req.body || {});
     res.status(200).json({ message: "Testcase updated", data: response, success: true });
 }
 export async function deleteProblemTestcaseHandler(req: Request, res: Response) {
+    logger.info("deleteProblemTestcaseHandler called", { params: req.params });
     const index = parseInt(req.params.index, 10);
     const response = await deleteTestcaseByIndex(req.params.id, index);
     res.status(200).json({ message: "Testcase deleted", data: response, success: true });
 }
 export async function validateProblemTestcasesHandler(req: Request, res: Response) {
+    logger.info("validateProblemTestcasesHandler called", { params: req.params });
     const response = await validateTestcases(req.params.id);
     res.status(200).json({ message: "Testcases validated", data: response, success: true });
 }
 
 export async function getRandomProblemHandler(req: Request, res: Response) {
+    logger.info("getRandomProblemHandler called", { query: req.query });
     const difficultyIn = (req.query.difficultyIn as string | undefined)?.split(",").filter(Boolean) as any;
     const tagsIn = (req.query.tagsIn as string | undefined)?.split(",").filter(Boolean);
     const companyIn = (req.query.companyIn as string | undefined)?.split(",").filter(Boolean);
@@ -200,6 +227,7 @@ export async function getRandomProblemHandler(req: Request, res: Response) {
 }
 
 export async function isSlugAvailableHandler(req: Request, res: Response) {
+    logger.info("isSlugAvailableHandler called", { query: req.query });
     const response = await isSlugAvailable((req.query.slug as string) || "");
     res.status(200).json({ message: "Slug availability", data: { available: response }, success: true });
 }
