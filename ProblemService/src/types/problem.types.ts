@@ -6,6 +6,11 @@ interface ICodeTemplate {
     defaultCode?: string;
 }
 
+interface ITestcase {
+    input: string;
+    output: string;
+}
+
 export interface IProblem extends Document {
     problemNumber: number;
     title: string;
@@ -29,4 +34,5 @@ export interface IProblem extends Document {
     createdAt: Date;
     updatedAt: Date;
     createdBy?: Types.ObjectId;
+    testcases: ITestcase[];
 }
