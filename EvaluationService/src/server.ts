@@ -7,6 +7,7 @@ import { appErrorHandler, genericErrorHandler } from './middlewares/error.middle
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import logger from './config/logger.config';
 import initEvaluationWorker from './workers/evaluation.worker';
+import { pullAllImages } from './utils/containers/pullImage.util';
 
 const app: Express = express();
 
@@ -27,4 +28,7 @@ app.listen(serverConfig.PORT, async () => {
 
     await initEvaluationWorker();
     logger.info("Evaluation worker started successfully");
+
+    await pullAllImages();
+    logger.info("All Docker images are pulled and ready to use");
 })
