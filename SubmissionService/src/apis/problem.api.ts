@@ -27,8 +27,11 @@ export interface IProblemResponse {
 
 export async function getProblemById(problemId: string): Promise<IProblemDetails | null> {
     try {
+        const url = `${serverConfig.PROBLEM_SERVICE}/problems/${problemId}`;
+        logger.info(`Fetching problem details from URL: ${url}`);
+
         const response: AxiosResponse<IProblemResponse> = 
-         await axios.get(`${serverConfig.PROBLEM_SERVICE}/problems/${problemId}`);
+         await axios.get(url);
 
         if (response.data.success) {
             return response.data.data;

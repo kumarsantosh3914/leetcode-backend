@@ -6,6 +6,7 @@ import v2Router from './routers/v2/index.router';
 import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import logger from './config/logger.config';
+import initEvaluationWorker from './workers/evaluation.worker';
 
 const app: Express = express();
 
@@ -23,4 +24,7 @@ app.use(genericErrorHandler);
 
 app.listen(serverConfig.PORT, async () => {
     logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
+
+    await initEvaluationWorker();
+    logger.info("Evaluation worker started successfully");
 })
