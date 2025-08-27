@@ -8,6 +8,8 @@ import { attachCorrelationIdMiddleware } from './middlewares/correlation.middlew
 import logger from './config/logger.config';
 import initEvaluationWorker from './workers/evaluation.worker';
 import { pullAllImages } from './utils/containers/pullImage.util';
+import { runCode } from './utils/containers/codeRunner';
+import { PYTHON_IMAGE } from './utils/constants';
 
 const app: Express = express();
 
@@ -31,4 +33,27 @@ app.listen(serverConfig.PORT, async () => {
 
     await pullAllImages();
     logger.info("All Docker images are pulled and ready to use");
+
+    await testPyThonCode();
 })
+
+async function testPyThonCode() {
+    const pythonCode = `
+import time
+i = 0
+while True:
+    i += 1
+    print(i)
+    time.sleep(1)
+
+print("Bye")
+    `;
+    // 1. Take the python code and dump in a file and run the python file in the container
+    
+    await runCode({
+        code: pythonCode,
+        language: "python",
+        timeout: 3000,
+        imageName: PYTHON_IMAGE
+    });
+}
