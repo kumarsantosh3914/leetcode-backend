@@ -20,6 +20,7 @@ export const updateSubmissionStatusSchema = z.object({
         "Status must be one of: pending, compiling, running, accepted, wrong_answer",
     }),
   }),
+  submissionData: z.any()
 });
 
 // Schema for query parameters (if needed for filtering)

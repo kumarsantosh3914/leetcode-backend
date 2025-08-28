@@ -1,11 +1,11 @@
-import { ISubmission, Submission, SubmissionStatus } from "../models/submission";
+import { ISubmission, ISubmissionData, Submission, SubmissionStatus } from "../models/submission";
 
 export interface ISubmissionRepository {
     create(submissionData: Partial<ISubmission>): Promise<ISubmission>;
     findById(id: string): Promise<ISubmission | null>;
     findByProblemId(problemId: string): Promise<ISubmission[]>;
     deleteById(id: string): Promise<boolean>;
-    updateStatus(id: string, status: SubmissionStatus): Promise<ISubmission | null>;
+    updateStatus(id: string, status: SubmissionStatus, submissionData: ISubmissionData): Promise<ISubmission | null>;
 }
 
 export class SubmissionRepository implements ISubmissionRepository {
@@ -30,10 +30,10 @@ export class SubmissionRepository implements ISubmissionRepository {
         return deletedSubmission !== null;
     }
 
-    async updateStatus(id: string, status: SubmissionStatus): Promise<ISubmission | null> {
+    async updateStatus(id: string, status: SubmissionStatus, submissionData: ISubmissionData): Promise<ISubmission | null> {
         const submission = await Submission.findByIdAndUpdate(
             id,
-            { status },
+            { status, submissionData },
             { new: true }
         );
         return submission;

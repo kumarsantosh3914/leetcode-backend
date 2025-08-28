@@ -11,8 +11,8 @@ import { attachCorrelationIdMiddleware } from "./middlewares/correlation.middlew
 import logger from "./config/logger.config";
 import initEvaluationWorker from "./workers/evaluation.worker";
 import { pullAllImages } from "./utils/containers/pullImage.util";
-import { runCode } from "./utils/containers/codeRunner";
-import { CPP_IMAGE } from "./utils/constants";
+// import { runCode } from "./utils/containers/codeRunner";
+// import { CPP_IMAGE } from "./utils/constants";
 
 const app: Express = express();
 
@@ -38,7 +38,7 @@ app.listen(serverConfig.PORT, async () => {
   logger.info("All Docker images are pulled and ready to use");
 
   // await testPythonCodeWithInput();
-  await testCppCodeWithInput();
+  // await testCppCodeWithInput();
 });
 
 // async function testPyThonCode() {
@@ -80,28 +80,28 @@ app.listen(serverConfig.PORT, async () => {
 //   });
 // }
 
-async function testCppCodeWithInput() {
-  const cppCode = `
-#include <iostream>
-#include <string>
-using namespace std;
+// async function testCppCodeWithInput() {
+//   const cppCode = `
+// #include <iostream>
+// #include <string>
+// using namespace std;
 
-int main() {
-    int n;
-    std::cin>>n;
+// int main() {
+//     int n;
+//     std::cin>>n;
 
-    for(int i=0; i<n; i++) {
-        std::cout<<i<<std::endl;
-    }
-    return 0;
-}
-    `;
+//     for(int i=0; i<n; i++) {
+//         std::cout<<i<<std::endl;
+//     }
+//     return 0;
+// }
+//     `;
 
-  await runCode({
-    code: cppCode,
-    language: "cpp",
-    timeout: 3000,
-    imageName: CPP_IMAGE,
-    input: "10",
-  });
-}
+//   await runCode({
+//     code: cppCode,
+//     language: "cpp",
+//     timeout: 3000,
+//     imageName: CPP_IMAGE,
+//     input: "10",
+//   });
+// }

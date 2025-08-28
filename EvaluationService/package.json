@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@types/dockerode": "^3.3.43",
+    "axios": "^1.11.0",
     "bullmq": "^5.58.1",
     "dockerode": "^4.0.7",
     "dotenv": "^16.5.0",

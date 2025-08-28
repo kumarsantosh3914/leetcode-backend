@@ -26,7 +26,7 @@ const testCaseSchema = new Schema({
         required: [true, "Output is required"],
         trim: true,
     }
-}, { _id: false });
+});
 
 const problemSchema = new Schema({
     problemNumber: {
