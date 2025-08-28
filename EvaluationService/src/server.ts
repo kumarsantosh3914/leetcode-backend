@@ -12,7 +12,7 @@ import logger from "./config/logger.config";
 import initEvaluationWorker from "./workers/evaluation.worker";
 import { pullAllImages } from "./utils/containers/pullImage.util";
 import { runCode } from "./utils/containers/codeRunner";
-import { CPP_IMAGE, PYTHON_IMAGE } from "./utils/constants";
+import { CPP_IMAGE } from "./utils/constants";
 
 const app: Express = express();
 
@@ -37,7 +37,7 @@ app.listen(serverConfig.PORT, async () => {
   await pullAllImages();
   logger.info("All Docker images are pulled and ready to use");
 
-  await testPythonCodeWithInput();
+  // await testPythonCodeWithInput();
   await testCppCodeWithInput();
 });
 
@@ -62,23 +62,23 @@ app.listen(serverConfig.PORT, async () => {
 //     });
 // }
 
-async function testPythonCodeWithInput() {
-  const pythonCode = `
-name = input("Enter your name: ")
-age = int(input("Enter your age: "))
-print(f"Hello {name}, you are {age} years old!")
-    `;
+// async function testPythonCodeWithInput() {
+//   const pythonCode = `
+// name = input("Enter your name: ")
+// age = int(input("Enter your age: "))
+// print(f"Hello {name}, you are {age} years old!")
+//     `;
 
-  const userInput = "Santosh Kumar\n21";
+//   const userInput = "Santosh Kumar\n21";
 
-  await runCode({
-    code: pythonCode,
-    language: "python",
-    timeout: 3000,
-    imageName: PYTHON_IMAGE,
-    input: userInput,
-  });
-}
+//   await runCode({
+//     code: pythonCode,
+//     language: "python",
+//     timeout: 3000,
+//     imageName: PYTHON_IMAGE,
+//     input: userInput,
+//   });
+// }
 
 async function testCppCodeWithInput() {
   const cppCode = `
@@ -87,28 +87,21 @@ async function testCppCodeWithInput() {
 using namespace std;
 
 int main() {
-    string name;
-    int age;
-    
-    cout << "Enter your name: ";
-    getline(cin, name);
-    
-    cout << "Enter your age: ";
-    cin >> age;
-    
-    cout << "Hello " << name << ", you are " << age << " years old!" << endl;
-    
+    int n;
+    std::cin>>n;
+
+    for(int i=0; i<n; i++) {
+        std::cout<<i<<std::endl;
+    }
     return 0;
 }
     `;
-
-  const userInput = "Santosh Kumar\n21";
 
   await runCode({
     code: cppCode,
     language: "cpp",
     timeout: 3000,
     imageName: CPP_IMAGE,
-    input: userInput,
+    input: "10",
   });
 }
