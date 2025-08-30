@@ -1,247 +1,484 @@
 # LeetCode Backend Monorepo
 
-This repository contains three independent TypeScript/Express microservices:
+This repository contains three independent TypeScript/Express microservices that form a complete coding problem evaluation platform:
 
-- ProblemService — Problems, categories, and companies CRUD.
-- SubmissionService — Code submission lifecycle and queuing to Evaluation.
-- EvaluationService — Background evaluation of submissions in Docker containers.
+- **ProblemService** — Complete CRUD operations for coding problems, categories, companies, tags, testcases, statements, and statistics
+- **SubmissionService** — Code submission lifecycle management with validation and job queuing
+- **EvaluationService** — Background evaluation of submissions in isolated Docker containers
 
-Each service is standalone (own server, config, dependencies). They communicate via HTTP (Problem/Submission API) and Redis/BullMQ (Submission jobs).
+Each service is standalone with its own server, configuration, dependencies, and database. They communicate via HTTP APIs and Redis/BullMQ for job queuing.
 
 ## Prerequisites
 
-- Node.js 18+
-- npm
-- MongoDB
-- Redis
-- Docker (required for EvaluationService)
+- **Node.js 18+**
+- **npm** (comes with Node.js)
+- **MongoDB** (running locally or remote)
+- **Redis** (running locally or remote)
+- **Docker** (required for EvaluationService - must be running with daemon)
 
 ## Repository Structure
 
-- `EvaluationService/`
-- `ProblemService/`
-- `SubmissionService/`
+```
+LeetCode-Backend/
+├── EvaluationService/
+│   ├── src/
+│   │   ├── config/          # Configuration files (DB, Redis, Logger)
+│   │   ├── controllers/     # Request handlers
+│   │   ├── interfaces/      # TypeScript interfaces
+│   │   ├── middlewares/     # Express middlewares (error, correlation)
+│   │   ├── routers/         # API route definitions
+│   │   ├── utils/           # Core utilities (Docker, constants)
+│   │   ├── validators/      # Request validation schemas
+│   │   └── workers/         # BullMQ job processors
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── logs/
+├── ProblemService/
+│   ├── src/
+│   │   ├── config/          # Database and logger config
+│   │   ├── controllers/     # Business logic handlers
+│   │   ├── middlewares/     # Express middlewares
+│   │   ├── models/          # Mongoose schemas
+│   │   ├── repositories/    # Data access layer
+│   │   ├── routers/         # API route definitions
+│   │   ├── services/        # Business logic services
+│   │   ├── types/           # TypeScript type definitions
+│   │   ├── utils/           # Helper utilities
+│   │   └── validators/      # Zod validation schemas
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── logs/
+├── SubmissionService/
+│   ├── src/
+│   │   ├── apis/            # External API clients
+│   │   ├── config/          # Database and Redis config
+│   │   ├── controllers/     # Request handlers
+│   │   ├── factories/       # Dependency injection factories
+│   │   ├── middlewares/     # Express middlewares
+│   │   ├── models/          # Mongoose schemas
+│   │   ├── producers/       # BullMQ job producers
+│   │   ├── queues/          # Queue configurations
+│   │   ├── repositories/    # Data access layer
+│   │   ├── routers/         # API route definitions
+│   │   ├── services/        # Business logic services
+│   │   ├── utils/           # Helper utilities
+│   │   └── validators/      # Zod validation schemas
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── logs/
+└── README.md
+```
 
 Each service has:
-- `src/` with config, routers, controllers, middlewares
-- `package.json` with start/dev scripts
-- `tsconfig.json`
-- `.env` (local config)
+- `src/` with organized, modular code structure
+- `package.json` with service-specific dependencies and scripts
+- `tsconfig.json` with TypeScript configuration
+- `.env` (local environment configuration)
+- `logs/` directory for Winston logger output
 
-## Service Overview
+## Architecture Overview
+
+### Design Patterns & Technologies
+
+- **ProblemService**: Traditional MVC architecture with Repository pattern
+- **SubmissionService**: Factory pattern for dependency injection with Repository-Service-Controller layers
+- **EvaluationService**: Worker-based architecture with BullMQ job processing
+
+### Shared Technologies Across Services
+- **Runtime**: Node.js with Express.js
+- **Language**: TypeScript with strict mode
+- **Database**: MongoDB with Mongoose ODM
+- **Validation**: Zod schemas for request validation
+- **Logging**: Winston with daily rotation and MongoDB transport
+- **Error Handling**: Structured error responses with correlation IDs
+- **Process Management**: Nodemon for development
+
+### Service-Specific Technologies
+- **SubmissionService**: BullMQ + Redis for job queuing
+- **EvaluationService**: Dockerode for container management, BullMQ worker
+
+## Service Details
 
 ### ProblemService
 
-Purpose:
-- Manage coding problems, categories, companies, tags, testcases, statements, stats.
+**Purpose**: Complete problem management system with full CRUD operations.
 
-Server:
+**Architecture**: MVC pattern with Repository layer for data access.
+
+**Key Features**:
+- Problem CRUD with soft delete support
+- Category and company management
+- Tag system for problem categorization
+- Test case management and validation
+- Code template support for multiple languages
+- Problem statistics and metadata
+- Full-text search capabilities
+- Slug-based URL generation
+
+**Database Models**:
+- **Problem**: Core problem data with test cases, templates, tags, companies
+- **Category**: Problem categorization
+- **Company**: Company information for interview questions
+
+**Server**:
 - Entry: `ProblemService/src/server.ts`
-- Routers: `ProblemService/src/routers/v1/*.router.ts`
-- Middleware: correlation ID, structured error handlers
-- DB: MongoDB (via `mongoose`)
+- Framework: Express.js with TypeScript
+- Database: MongoDB via Mongoose
+- Validation: Zod schemas
+- Logging: Winston with file and MongoDB transports
 
-Env:
-- `PORT`: number (default 3000)
-- `DB_URI`: MongoDB connection string
+**Dependencies**:
+```json
+{
+  "express": "^5.1.0",
+  "mongoose": "^8.17.1",
+  "zod": "^3.24.2",
+  "winston": "^3.17.0",
+  "winston-daily-rotate-file": "^5.0.0",
+  "winston-mongodb": "^6.0.0",
+  "dotenv": "^16.5.0",
+  "uuid": "^11.1.0"
+}
+```
 
-Scripts:
-- `npm run dev` — nodemon src/server.ts
-- `npm run start` — ts-node src/server.ts
+**Environment Variables**:
+```bash
+PORT=3000
+DB_URI=mongodb://localhost:27017/leetcode_problems
+```
 
-Base URL:
-- `http://localhost:PORT/api/v1`
+**Scripts**:
+- `npm run dev` — Development with nodemon auto-restart
+- `npm run start` — Production with ts-node
 
-Endpoints (v1):
-- Ping
-  - GET `/ping`
-- Categories (`category.router.ts`)
-  - POST `/categories`
-  - GET `/categories`
-  - GET `/categories/:id`
-  - PUT `/categories/:id`
-  - DELETE `/categories/:id`
-- Companies (`company.router.ts`)
-  - POST `/companies`
-  - GET `/companies`
-  - GET `/companies/:id`
-  - PUT `/companies/:id`
-  - DELETE `/companies/:id`
-- Problems (`problem.router.ts`)
-  - POST `/problems`
-  - GET `/problems`
-  - GET `/problems/count`
-  - GET `/problems/random`
-  - GET `/problems/slug-available`
-  - GET `/problems/slug/:slug`
-  - GET `/problems/:id`
-  - PUT `/problems/:id`
-  - PATCH `/problems/:id`
-  - DELETE `/problems/:id`
-  - DELETE `/problems/:id/soft`
-  - Tags
-    - GET `/problems/:id/tags`
-    - POST `/problems/:id/tags`
-    - DELETE `/problems/:id/tags/:tag`
-  - Companies
-    - GET `/problems/:id/companies`
-    - POST `/problems/:id/companies`
-    - DELETE `/problems/:id/companies/:companyId`
-  - Statement / Meta / Stats
-    - GET `/problems/:id/statement`
-    - PATCH `/problems/:id/statement`
-    - GET `/problems/:id/meta`
-    - GET `/problems/:id/stats`
-  - Testcases
-    - GET `/problems/:id/testcases`
-    - POST `/problems/:id/testcases`
-    - PATCH `/problems/:id/testcases/:index`
-    - DELETE `/problems/:id/testcases/:index`
-    - POST `/problems/:id/testcases/validate`
+**Base URL**: `http://localhost:PORT/api/v1`
+
+**Endpoints**:
+- **Ping**: `GET /ping` - Health check
+- **Problems**:
+  - `POST /problems` - Create problem
+  - `GET /problems` - List problems with pagination
+  - `GET /problems/count` - Get total problem count
+  - `GET /problems/random` - Get random problem
+  - `GET /problems/slug-available` - Check slug availability
+  - `GET /problems/slug/:slug` - Get problem by slug
+  - `GET /problems/:id` - Get problem by ID
+  - `PUT /problems/:id` - Update problem
+  - `PATCH /problems/:id` - Partial update
+  - `DELETE /problems/:id` - Hard delete
+  - `DELETE /problems/:id/soft` - Soft delete
+- **Tags**: `GET|POST|DELETE /problems/:id/tags`
+- **Companies**: `GET|POST|DELETE /problems/:id/companies`
+- **Statements**: `GET|PATCH /problems/:id/statement`
+- **Metadata**: `GET /problems/:id/meta`
+- **Statistics**: `GET /problems/:id/stats`
+- **Test Cases**: `GET|POST|PATCH|DELETE /problems/:id/testcases`
+- **Categories**: `GET|POST|GET|PUT|DELETE /categories`
+- **Companies**: `GET|POST|GET|PUT|DELETE /companies`
 
 ### SubmissionService
 
-Purpose:
-- Accept code submissions for a problem.
-- Validate with ProblemService.
-- Persist submission and enqueue a BullMQ job to EvaluationService.
+**Purpose**: Handle code submissions, validate problems, and queue evaluation jobs.
 
-Server:
+**Architecture**: Factory pattern with dependency injection, Repository-Service-Controller layers.
+
+**Key Features**:
+- Submission validation against ProblemService
+- BullMQ job queuing for evaluation
+- Submission status tracking
+- Query submissions by problem
+- Factory-based dependency management
+
+**Database Models**:
+- **Submission**: Code, language, status, problem reference, test case results
+
+**Supported Languages**: Python, C++
+
+**Server**:
 - Entry: `SubmissionService/src/server.ts`
-- Dependencies: axios, bullmq/ioredis, mongoose
-- Queue: `submission` (BullMQ), see `src/queues/submission.queue.ts`
-- Producer: `src/producers/submission.producer.ts`
+- External APIs: Axios client for ProblemService communication
+- Queue: BullMQ with Redis
+- Database: MongoDB via Mongoose
 
-Env:
-- `PORT`: number (default assumed 3001)
-- `DB_URI`: MongoDB connection string
-- `REDIS_HOST`: host (default localhost)
-- `REDIS_PORT`: port (default 6379)
-- `PROBLEM_SERVICE`: ProblemService base URL for lookups (default `http://localhost:3000/api/v1`)
+**Dependencies**:
+```json
+{
+  "express": "^5.1.0",
+  "mongoose": "^8.18.0",
+  "bullmq": "^5.58.1",
+  "ioredis": "^5.7.0",
+  "axios": "^1.11.0",
+  "zod": "^3.24.2",
+  "winston": "^3.17.0",
+  "winston-daily-rotate-file": "^5.0.0",
+  "winston-mongodb": "^6.0.0",
+  "dotenv": "^16.5.0",
+  "uuid": "^11.1.0"
+}
+```
 
-Scripts:
-- `npm run dev` — nodemon src/server.ts
-- `npm run start` — ts-node src/server.ts
+**Environment Variables**:
+```bash
+PORT=3001
+DB_URI=mongodb://localhost:27017/leetcode_submissions
+REDIS_HOST=localhost
+REDIS_PORT=6379
+PROBLEM_SERVICE=http://localhost:3000/api/v1
+```
 
-Base URL:
-- `http://localhost:PORT/api/v1`
+**Scripts**:
+- `npm run dev` — Development with nodemon
+- `npm run start` — Production with ts-node
 
-Endpoints:
-- Ping
-  - GET `/ping`
-- Submissions (`submission.router.ts`) — routes present but not wired into v1 index yet.
-  - POST `/submissions`
-  - GET `/submissions/:id`
-  - GET `/submissions/problem/:problemId`
-  - DELETE `/submissions/:id`
-  - PATCH `/submissions/:id/status`
+**Base URL**: `http://localhost:PORT/api/v1`
 
-Important:
-- To expose submissions API, mount the router in `src/routers/v1/index.router.ts`:
-  - `v1Router.use('/submissions', submissionRouter);`
+**Endpoints**:
+- **Ping**: `GET /ping` - Health check
+- **Submissions**:
+  - `POST /submissions` - Create new submission
+  - `GET /submissions/:id` - Get submission by ID
+  - `GET /submissions/problem/:problemId` - Get submissions for problem
+  - `DELETE /submissions/:id` - Delete submission
+  - `PATCH /submissions/:id/status` - Update submission status
 
-Processing Flow:
-1) Client POSTs submission -> validate body with zod.
-2) Service fetches problem via PROBLEM_SERVICE.
-3) Persist submission.
-4) Enqueue job with queue name "submission".
-5) EvaluationService worker consumes and performs code execution.
+**Processing Flow**:
+1. Client submits code via POST /submissions
+2. Validate request body with Zod schema
+3. Fetch problem details from ProblemService
+4. Persist submission in database
+5. Queue evaluation job to BullMQ "submission" queue
+6. Return submission ID to client
 
 ### EvaluationService
 
-Purpose:
-- Consume submission jobs and evaluate code safely in Docker containers.
-- Supports Python and C++ code execution with time/memory limits.
+**Purpose**: Execute submitted code safely in Docker containers and evaluate against test cases.
 
-Server/Worker:
+**Architecture**: Worker-based with BullMQ job processing and Docker container management.
+
+**Key Features**:
+- Isolated code execution in Docker containers
+- Multi-language support (Python, C++)
+- Resource limits and security constraints
+- Test case evaluation with result matching
+- Job queue processing with error handling
+- Real-time status updates to SubmissionService
+
+**Supported Languages**:
+- **Python**: `python:3.8-slim` image, 4-second timeout
+- **C++**: `gcc:latest` image, 4-second timeout
+
+**Security Features**:
+- No network access in containers
+- Memory limit: 1GB per container
+- CPU resource constraints
+- No new privileges
+- Isolated execution environment
+
+**Database**: MongoDB (primarily for logging, submissions managed via API)
+
+**Server/Worker**:
 - Entry: `EvaluationService/src/server.ts`
-  - Starts Express
-  - Starts BullMQ worker: `src/workers/evaluation.worker.ts`
-  - Pulls Docker images on boot: `src/utils/containers/pullImage.util.ts` (invoked)
-  - Runs sample code tests on boot (for dev/demo): `testPythonCodeWithInput`, `testCppCodeWithInput`
+- Starts Express server and BullMQ worker
+- Pulls Docker images on startup
+- Processes jobs from "submission" queue
 
-Job Queue:
-- Name: `submission` (see `src/utils/constants.ts`)
-- Worker: `src/workers/evaluation.worker.ts` (currently logs job lifecycle)
+**Code Execution Flow**:
+1. Receive job from BullMQ queue
+2. Extract code, language, test cases from job data
+3. Create Docker container with appropriate image
+4. Execute code against each test case in parallel
+5. Compare outputs with expected results
+6. Update submission status via SubmissionService API
+7. Clean up Docker container
 
-Code Runner:
-- `src/utils/containers/codeRunner.ts`
-  - Starts Docker container via `dockerode` with controlled CPU/memory, no network, no-new-privileges.
-  - Commands builder: `src/utils/containers/commands.util.ts`
-  - Languages allowed: `python`, `cpp`.
-  - Images: `PYTHON_IMAGE=python:3.8-slim`, `CPP_IMAGE=gcc:latest`
+**Dependencies**:
+```json
+{
+  "express": "^5.1.0",
+  "bullmq": "^5.58.1",
+  "dockerode": "^4.0.7",
+  "@types/dockerode": "^3.3.43",
+  "ioredis": "^5.7.0",
+  "axios": "^1.11.0",
+  "mongoose": "^8.13.2",
+  "zod": "^3.24.2",
+  "winston": "^3.17.0",
+  "winston-daily-rotate-file": "^5.0.0",
+  "winston-mongodb": "^6.0.0",
+  "dotenv": "^16.5.0",
+  "uuid": "^11.1.0"
+}
+```
 
-Env:
-- `PORT`: number (default assumed 3002)
-- `MONGODB_URI`: MongoDB connection string
-- `PROBLEM_SERVICE`: ProblemService base URL (default `http://localhost:3000/api/v1`)
-- `SUBMISSION_SERVICE`: SubmissionService base URL (default `http://localhost:3001/api/v1`)
-- `REDIS_HOST`: host (default localhost)
-- `REDIS_PORT`: port (default 6379)
+**Environment Variables**:
+```bash
+PORT=3002
+MONGODB_URI=mongodb://localhost:27017/leetcode_evaluation
+PROBLEM_SERVICE=http://localhost:3000/api/v1
+SUBMISSION_SERVICE=http://localhost:3001/api/v1
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
 
-Scripts:
-- `npm run dev` — nodemon src/server.ts
-- `npm run start` — ts-node src/server.ts
+**Scripts**:
+- `npm run dev` — Development with nodemon
+- `npm run start` — Production with ts-node
 
-Note:
-- Startup runs sample code exec for Python/CPP. Remove/guard these for production.
-
-## Local Development
-
-Recommended ports:
-- ProblemService: 3000
-- SubmissionService: 3001
-- EvaluationService: 3002
-
-Example `.env` files (adjust as needed):
-
-`ProblemService/.env`
-- `PORT=3000`
-- `DB_URI=mongodb://localhost:27017/leetcode_problems`
-
-`SubmissionService/.env`
-- `PORT=3001`
-- `DB_URI=mongodb://localhost:27017/leetcode_submissions`
-- `REDIS_HOST=localhost`
-- `REDIS_PORT=6379`
-- `PROBLEM_SERVICE=http://localhost:3000/api/v1`
-
-`EvaluationService/.env`
-- `PORT=3002`
-- `MONGODB_URI=mongodb://localhost:27017/leetcode_evaluation`
-- `PROBLEM_SERVICE=http://localhost:3000/api/v1`
-- `SUBMISSION_SERVICE=http://localhost:3001/api/v1`
-- `REDIS_HOST=localhost`
-- `REDIS_PORT=6379`
-
-Start services (in separate terminals):
-- ProblemService: `npm install && npm run dev`
-- SubmissionService: `npm install && npm run dev`
-- EvaluationService: `npm install && npm run dev`
-
-Dependencies required:
-- MongoDB running locally
-- Redis running locally
-- Docker daemon running (EvaluationService)
+**Evaluation Results**:
+- **AC**: Accepted (output matches expected)
+- **WA**: Wrong Answer (output doesn't match)
+- **TLE**: Time Limit Exceeded
+- **Error**: Runtime/compilation error
 
 ## Inter-service Communication
 
-- SubmissionService -> ProblemService (HTTP)
-  - Validate problem existence before enqueuing
-- SubmissionService -> EvaluationService (Redis/BullMQ)
-  - Enqueue to "submission" queue
-- EvaluationService consumes queue and runs code with Docker
-  - Uses container resource limits and no network for safety
+### HTTP APIs
+- **SubmissionService → ProblemService**: Validate problem existence before queuing
+- **EvaluationService → ProblemService**: Fetch problem details and test cases
+- **EvaluationService → SubmissionService**: Update submission status and results
 
-## Logging and Error Handling
+### BullMQ Queues (Redis)
+- **SubmissionService → EvaluationService**: "submission" queue for evaluation jobs
+- **Configuration**: 3 retry attempts with exponential backoff (2-second delay)
 
-- Shared patterns:
-  - Correlation ID middleware for tracing
-  - Centralized error handlers
-  - Winston logger (with transports configured per service)
+### Data Flow
+1. **Client** → **SubmissionService** (POST /submissions)
+2. **SubmissionService** → **ProblemService** (GET problem details)
+3. **SubmissionService** → **Redis Queue** (enqueue evaluation job)
+4. **EvaluationService Worker** ← **Redis Queue** (dequeue job)
+5. **EvaluationService** → **ProblemService** (GET test cases)
+6. **EvaluationService** → **Docker** (execute code in container)
+7. **EvaluationService** → **SubmissionService** (PATCH submission status)
+8. **Client** ← **SubmissionService** (GET submission results)
 
-## Roadmap / Gaps
+## Local Development Setup
 
-- Wire `SubmissionService` submissions router into v1 index to expose its API.
-- Replace demo code-exec on EvaluationService startup with real job handling.
-- Add auth/rate limiting if needed.
+### Recommended Ports
+- **ProblemService**: 3000
+- **SubmissionService**: 3001
+- **EvaluationService**: 3002
+
+### Environment Configuration
+
+**ProblemService/.env**
+```bash
+PORT=3000
+DB_URI=mongodb://localhost:27017/leetcode_problems
+```
+
+**SubmissionService/.env**
+```bash
+PORT=3001
+DB_URI=mongodb://localhost:27017/leetcode_submissions
+REDIS_HOST=localhost
+REDIS_PORT=6379
+PROBLEM_SERVICE=http://localhost:3000/api/v1
+```
+
+**EvaluationService/.env**
+```bash
+PORT=3002
+MONGODB_URI=mongodb://localhost:27017/leetcode_evaluation
+PROBLEM_SERVICE=http://localhost:3000/api/v1
+SUBMISSION_SERVICE=http://localhost:3001/api/v1
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+### Startup Sequence
+```bash
+# Terminal 1 - ProblemService
+cd ProblemService
+npm install
+npm run dev
+
+# Terminal 2 - SubmissionService
+cd SubmissionService
+npm install
+npm run dev
+
+# Terminal 3 - EvaluationService
+cd EvaluationService
+npm install
+npm run dev
+```
+
+### Required Services
+- **MongoDB**: `mongod` running locally
+- **Redis**: `redis-server` running locally
+- **Docker**: Daemon running for EvaluationService
+
+## Logging and Monitoring
+
+### Winston Logger Configuration
+- **Transports**: Console, Daily Rotate Files, MongoDB
+- **Log Levels**: error, warn, info, debug
+- **File Rotation**: Daily with 30-day retention
+- **MongoDB Collection**: Separate collections per service
+
+### Correlation ID Middleware
+- Unique request ID generation
+- Request tracing across services
+- Error correlation for debugging
+
+### Structured Error Handling
+- Centralized error handlers per service
+- Consistent error response format
+- HTTP status code mapping
+
+## TypeScript Configuration
+
+### Shared Settings
+- **Target**: ES2016
+- **Module**: CommonJS
+- **Root Directory**: `./src`
+- **Output Directory**: `./dist`
+- **Strict Mode**: Enabled
+- **ES Module Interop**: Enabled
+- **Source Maps**: Generated
+
+### Key Compiler Options
+```json
+{
+  "strict": true,
+  "noUnusedLocals": true,
+  "esModuleInterop": true,
+  "forceConsistentCasingInFileNames": true,
+  "skipLibCheck": true
+}
+```
+
+## API Response Formats
+
+### Success Response
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation successful"
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "correlationId": "unique-request-id"
+}
+```
+
+## Roadmap & Future Enhancements
+
+- [ ] Wire SubmissionService submissions router into v1 index (currently commented)
+- [ ] Add authentication and authorization
+- [ ] Implement rate limiting
+- [ ] Add API documentation (Swagger/OpenAPI)
+- [ ] Add monitoring and metrics (Prometheus)
+- [ ] Add more programming languages support
+- [ ] Implement code plagiarism detection
+- [ ] Add leaderboard and ranking system
+- [ ] Add problem difficulty voting
+- [ ] Implement code execution caching
+- [ ] Add support for custom test cases
+- [ ] Add problem discussion/comments system
