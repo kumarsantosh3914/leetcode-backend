@@ -1,13 +1,14 @@
 import { z } from "zod";
-import { SubmissionLanguage, SubmissionStatus } from "../models/submission";
+import { ISubmissionData, SubmissionLanguage, SubmissionStatus } from "../models/submission";
 
 // Schema for creating a new submission
 export const createSubmissionSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
   problemId: z.string().min(1, "Problem ID is required"),
   code: z.string().min(1, "Code is required"),
   language: z.nativeEnum(SubmissionLanguage, {
     errorMap: () => ({
-      message: "Lnaguage must be either 'cpp' or 'python' or 'java'",
+      message: "Language must be one of: cpp, python",
     }),
   }),
 });
@@ -16,11 +17,13 @@ export const createSubmissionSchema = z.object({
 export const updateSubmissionStatusSchema = z.object({
   status: z.nativeEnum(SubmissionStatus, {
     errorMap: () => ({
-      message:
-        "Status must be one of: pending, compiling, running, accepted, wrong_answer",
+      message: "Status must be one of: completed, pending",
     }),
   }),
-  submissionData: z.any()
+  submissionData: z.record(
+    z.string().min(1),
+    z.enum(["AC", "WA", "TLE", "RE"]) as unknown as z.ZodType<ISubmissionData[keyof ISubmissionData]>
+  )
 });
 
 // Schema for query parameters (if needed for filtering)

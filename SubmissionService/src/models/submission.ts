@@ -10,12 +10,11 @@ export enum SubmissionLanguage {
     PYTHON = 'python',
 }
 
-export interface ISubmissionData {
-    testCaseId: string;
-    status: string;
-}
+// Map of testCaseId -> verdict
+export type ISubmissionData = Record<string, 'AC' | 'WA' | 'TLE' | 'RE'>;
 
 export interface ISubmission extends Document {
+    userId: string;
     problemId: string;
     code: string;
     language: SubmissionLanguage;
@@ -26,6 +25,10 @@ export interface ISubmission extends Document {
 }
 
 const submissionSchema = new Schema<ISubmission>({
+    userId: {
+        type: String,
+        required: [true, "User Id required for the submission"]
+    },
     problemId: {
         type: String,
         required: [true, "Problem Id required for the submission"]
@@ -54,9 +57,9 @@ const submissionSchema = new Schema<ISubmission>({
     timestamps: true,
     toJSON: {
         transform: (_doc, record) => {
-            delete (record as any)._v; // delete _v field
-            record.id = record._id; // add id field
-            delete record._id; // delete _id field
+            delete (record as any).__v;
+            (record as any).id = (record as any)._id;
+            delete (record as any)._id;
             return record;
         }
     }
