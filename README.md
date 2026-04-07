@@ -1,4 +1,4 @@
-# LeetCode Backend Monorepo
+# LeetCode Backend
 
 This repository contains three independent TypeScript/Express microservices that form a complete coding problem evaluation platform:
 
