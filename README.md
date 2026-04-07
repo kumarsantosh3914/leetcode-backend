@@ -8,6 +8,9 @@ This repository contains three independent TypeScript/Express microservices that
 
 Each service is standalone with its own server, configuration, dependencies, and database. They communicate via HTTP APIs and Redis/BullMQ for job queuing.
 
+## Architecture Diagram
+![HLD Design](./docs/image.png)
+
 ## Prerequisites
 
 - **Node.js 18+**
